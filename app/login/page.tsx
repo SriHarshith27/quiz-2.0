@@ -43,15 +43,22 @@ export default function LoginPage() {
     }
   };
 
-  const handleRegister = async (email: string, password: string, fullName: string) => {
+  const handleRegister = async (email: string, password: string, fullName: string, role: string) => {
     setError(null);
     setLoading(true);
 
     try {
       const supabase = createClient();
+      // Pass metadata to the SignUp call. The database trigger will handle the profile creation.
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: fullName,
+            role: role,
+          },
+        },
       });
 
       if (signUpError) {
@@ -59,24 +66,17 @@ export default function LoginPage() {
         return;
       }
 
-      if (authData.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([{
-            id: authData.user.id,
-            email: email,
-            full_name: fullName,
-          }]);
-
-        if (profileError) {
-          setError('Failed to create profile. Please try again.');
-          return;
-        }
-
+      if (authData.user && authData.session) {
+        // Successful login (Email confirmation OFF)
         router.push('/dashboard');
         router.refresh();
+      } else if (authData.user && !authData.session) {
+        // User created, but email confirmation required
+        setError('Account created! Please check your email to confirm your account.');
+        setLoading(false);
       }
     } catch (err) {
+      console.error(err);
       setError('An unexpected error occurred');
     } finally {
       setLoading(false);
@@ -114,8 +114,8 @@ export default function LoginPage() {
       </div>
 
       <div className="w-full max-w-sm relative z-10">
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-all duration-300 group"
         >
           <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
@@ -130,7 +130,7 @@ export default function LoginPage() {
         >
           {/* Logo and sparkles */}
           <div className="text-center pt-6 pb-3">
-            <motion.div 
+            <motion.div
               className="flex justify-center mb-3"
               whileHover={{ scale: 1.05, rotate: 5 }}
               transition={{ type: "spring", stiffness: 300 }}
@@ -161,16 +161,15 @@ export default function LoginPage() {
                 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               />
-              
+
               <div className="relative z-10 grid grid-cols-2 gap-1">
                 <button
                   onClick={() => {
                     setActiveTab('login');
                     setError(null);
                   }}
-                  className={`py-2.5 px-4 rounded-lg font-semibold text-sm transition-colors duration-200 ${
-                    activeTab === 'login' ? 'text-white' : 'text-gray-400 hover:text-gray-200'
-                  }`}
+                  className={`py-2.5 px-4 rounded-lg font-semibold text-sm transition-colors duration-200 ${activeTab === 'login' ? 'text-white' : 'text-gray-400 hover:text-gray-200'
+                    }`}
                 >
                   Sign In
                 </button>
@@ -179,9 +178,8 @@ export default function LoginPage() {
                     setActiveTab('register');
                     setError(null);
                   }}
-                  className={`py-2.5 px-4 rounded-lg font-semibold text-sm transition-colors duration-200 ${
-                    activeTab === 'register' ? 'text-white' : 'text-gray-400 hover:text-gray-200'
-                  }`}
+                  className={`py-2.5 px-4 rounded-lg font-semibold text-sm transition-colors duration-200 ${activeTab === 'register' ? 'text-white' : 'text-gray-400 hover:text-gray-200'
+                    }`}
                 >
                   Sign Up
                 </button>
@@ -229,7 +227,7 @@ export default function LoginPage() {
           </div>
         </motion.div>
 
-        <motion.p 
+        <motion.p
           className="text-center text-gray-500 text-xs mt-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

@@ -21,9 +21,7 @@ export const Logo = ({ size = 'md', showText = true, textColor = 'text-gray-900'
 
   return (
     <div className="flex items-center gap-2">
-      <div className="bg-gradient-to-br from-blue-500 to-cyan-500 p-2 rounded-lg shadow-lg">
-        <Brain className={`${sizeClasses[size]} text-white`} />
-      </div>
+      
       {showText && (
         <span className={`font-bold ${textSizeClasses[size]} ${textColor}`}>
           QuizMaster

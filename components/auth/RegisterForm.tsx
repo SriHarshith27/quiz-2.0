@@ -4,19 +4,21 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
-import { Mail, Lock, User, Loader2 } from 'lucide-react';
+import { Mail, Lock, User, Loader2, GraduationCap, School } from 'lucide-react';
 
 interface RegisterFormProps {
-  onSubmit: (email: string, password: string, fullName: string) => Promise<void>;
+  onSubmit: (email: string, password: string, fullName: string, role: string) => Promise<void>;
   error: string | null;
+  success?: string | null;
   loading: boolean;
 }
 
-export const RegisterForm = ({ onSubmit, error, loading }: RegisterFormProps) => {
+export const RegisterForm = ({ onSubmit, error, success, loading }: RegisterFormProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [role, setRole] = useState<'student' | 'mentor'>('student');
   const [validationError, setValidationError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,13 +35,23 @@ export const RegisterForm = ({ onSubmit, error, loading }: RegisterFormProps) =>
       return;
     }
 
-    await onSubmit(email, password, fullName);
+    await onSubmit(email, password, fullName, role);
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {success && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-lg backdrop-blur-sm"
+        >
+          <p className="text-emerald-400 text-sm font-medium">{success}</p>
+        </motion.div>
+      )}
+
       {(error || validationError) && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-red-500/10 border border-red-500/30 p-4 rounded-lg backdrop-blur-sm"
@@ -47,6 +59,51 @@ export const RegisterForm = ({ onSubmit, error, loading }: RegisterFormProps) =>
           <p className="text-red-400 text-sm">{error || validationError}</p>
         </motion.div>
       )}
+
+      {/* Role Selection */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="grid grid-cols-2 gap-3 mb-4"
+      >
+        <button
+          type="button"
+          onClick={() => setRole('student')}
+          className={`relative p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all duration-200 ${role === 'student'
+            ? 'bg-purple-600/20 border-purple-500 text-white'
+            : 'bg-gray-800/50 border-gray-700 text-gray-400 hover:bg-gray-800'
+            }`}
+        >
+          <GraduationCap size={24} className={role === 'student' ? 'text-purple-400' : 'text-gray-500'} />
+          <span className="text-xs font-medium">Student</span>
+          {role === 'student' && (
+            <motion.div
+              layoutId="role-indicator"
+              className="absolute inset-0 border-2 border-purple-500 rounded-xl"
+              transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+            />
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setRole('mentor')}
+          className={`relative p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all duration-200 ${role === 'mentor'
+            ? 'bg-emerald-600/20 border-emerald-500 text-white'
+            : 'bg-gray-800/50 border-gray-700 text-gray-400 hover:bg-gray-800'
+            }`}
+        >
+          <School size={24} className={role === 'mentor' ? 'text-emerald-400' : 'text-gray-500'} />
+          <span className="text-xs font-medium">Mentor</span>
+          {role === 'mentor' && (
+            <motion.div
+              layoutId="role-indicator"
+              className="absolute inset-0 border-2 border-emerald-500 rounded-xl"
+              transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+            />
+          )}
+        </button>
+      </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 10 }}
