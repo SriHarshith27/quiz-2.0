@@ -23,7 +23,7 @@ export const Card = ({
 
   return (
     <div
-      className={`bg-white rounded-xl shadow-lg ${paddingClasses[padding]} ${hoverClass} ${className}`}
+      className={`rounded-xl shadow-lg ${paddingClasses[padding]} ${hoverClass} ${className}`}
     >
       {children}
     </div>

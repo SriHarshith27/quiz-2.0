@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Logo } from '@/components/common/Logo';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { RegisterForm } from '@/components/auth/RegisterForm';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 
 export default function LoginPage() {
@@ -21,6 +21,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      const supabase = createClient();
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -33,6 +34,7 @@ export default function LoginPage() {
 
       if (data.user) {
         router.push('/dashboard');
+        router.refresh();
       }
     } catch (err) {
       setError('An unexpected error occurred');
@@ -46,6 +48,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      const supabase = createClient();
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -71,6 +74,7 @@ export default function LoginPage() {
         }
 
         router.push('/dashboard');
+        router.refresh();
       }
     } catch (err) {
       setError('An unexpected error occurred');
